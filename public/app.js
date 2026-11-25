@@ -15,7 +15,9 @@ const state = {
 // ==================== INICIALIZACIÓN ====================
 document.addEventListener('DOMContentLoaded', () => {
   setupNavigation();
+  startClock();
   fetchAllData();
+  initDefaultEditorTemplate();
 
   // Botón refrescar
   const btnRefresh = document.getElementById('btnRefreshAll');
@@ -121,20 +123,35 @@ function renderAll() {
   renderCursos();
   renderInstructores();
   renderMatriculas();
+  renderCalificaciones();
   populateSelects();
+  fetchViewerData();
 }
 
 function updateBadges() {
-  document.getElementById('countBadgeAprendices').textContent = state.aprendices.length;
-  document.getElementById('countBadgeProgramas').textContent = state.programas.length;
-  document.getElementById('countBadgeCursos').textContent = state.cursos.length;
-  document.getElementById('countBadgeInstructores').textContent = state.instructores.length;
-  document.getElementById('countBadgeMatriculas').textContent = state.matriculas.length;
+  const elAp = document.getElementById('countBadgeAprendices');
+  const elProg = document.getElementById('countBadgeProgramas');
+  const elCur = document.getElementById('countBadgeCursos');
+  const elInst = document.getElementById('countBadgeInstructores');
+  const elMat = document.getElementById('countBadgeMatriculas');
+  const elCal = document.getElementById('countBadgeCalificaciones');
 
-  document.getElementById('statAprendices').textContent = state.aprendices.length;
-  document.getElementById('statProgramas').textContent = state.programas.length;
-  document.getElementById('statCursos').textContent = state.cursos.length;
-  document.getElementById('statInstructores').textContent = state.instructores.length;
+  if (elAp) elAp.textContent = state.aprendices.length;
+  if (elProg) elProg.textContent = state.programas.length;
+  if (elCur) elCur.textContent = state.cursos.length;
+  if (elInst) elInst.textContent = state.instructores.length;
+  if (elMat) elMat.textContent = state.matriculas.length;
+  if (elCal) elCal.textContent = state.calificaciones.length;
+
+  const statAp = document.getElementById('statAprendices');
+  const statProg = document.getElementById('statProgramas');
+  const statCur = document.getElementById('statCursos');
+  const statInst = document.getElementById('statInstructores');
+
+  if (statAp) statAp.textContent = state.aprendices.length;
+  if (statProg) statProg.textContent = state.programas.length;
+  if (statCur) statCur.textContent = state.cursos.length;
+  if (statInst) statInst.textContent = state.instructores.length;
 }
 
 function renderDashboard() {
@@ -720,6 +737,381 @@ function showToast(message, type = 'info') {
     toast.style.transition = 'all 0.2s';
     setTimeout(() => toast.remove(), 200);
   }, 3500);
+}
+
+// Renderizado Calificaciones
+function renderCalificaciones() {
+  const tbody = document.getElementById('tbodyCalificaciones');
+  if (!tbody) return;
+
+  if (state.calificaciones.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No hay calificaciones registradas.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = state.calificaciones.map(cal => {
+    const mat = state.matriculas.find(m => String(m.id) === String(cal.matriculaId));
+    let aprendizNombre = 'N/A';
+    let cursoNombre = 'N/A';
+
+    if (mat) {
+      const ap = state.aprendices.find(a => String(a.id) === String(mat.aprendizId));
+      const cur = state.cursos.find(c => String(c.id) === String(mat.cursoId));
+      if (ap) aprendizNombre = `${ap.nombres} ${ap.apellidos}`;
+      if (cur) cursoNombre = cur.nombre;
+    }
+
+    return `
+      <tr>
+        <td>#${cal.id}</td>
+        <td><strong>${escapeHtml(aprendizNombre)}</strong></td>
+        <td>${escapeHtml(cursoNombre)}</td>
+        <td><strong style="color: ${cal.nota >= 3.0 ? '#059669' : '#dc2626'}">${cal.nota}</strong></td>
+        <td>${escapeHtml(cal.observacion || '-')}</td>
+        <td>${cal.fecha || '-'}</td>
+        <td style="text-align: right;">
+          <button class="btn btn-secondary btn-sm" onclick="openModalCalificacion('${cal.matriculaId}', '${escapeHtml(aprendizNombre)}', '${escapeHtml(cursoNombre)}')">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteRecord('calificaciones', '${cal.id}')">Eliminar</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ==================== CENTRO JSON (ALIMENTAR Y RECIBIR) ====================
+
+let lastViewedData = null;
+
+// Reloj dinámico
+function startClock() {
+  function updateTime() {
+    const el = document.getElementById('clockUpdated');
+    if (el) {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0];
+      el.textContent = `Actualizado ${timeStr}`;
+    }
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
+}
+
+// Recargar Centro JSON
+function reloadJsonCenter() {
+  showToast('Recargando datos JSON del servidor...', 'info');
+  fetchAllData();
+}
+
+// Consultar y mostrar datos en el visor JSON izquierdo
+async function fetchViewerData() {
+  const endpointEl = document.getElementById('viewerEndpoint');
+  const filterEl = document.getElementById('viewerFilter');
+  const displayEl = document.getElementById('jsonViewerDisplay');
+  if (!endpointEl || !displayEl) return;
+
+  const endpoint = endpointEl.value;
+  const filter = filterEl ? filterEl.value.trim() : '';
+
+  try {
+    let data;
+    if (endpoint === 'all') {
+      data = {
+        programas: state.programas,
+        aprendices: state.aprendices,
+        instructores: state.instructores,
+        cursos: state.cursos,
+        matriculas: state.matriculas,
+        calificaciones: state.calificaciones
+      };
+    } else {
+      let url = `${API_BASE}/${endpoint}`;
+      if (filter) {
+        url += filter.startsWith('?') ? filter : `?${filter}`;
+      }
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      data = await res.json();
+    }
+
+    lastViewedData = data;
+    displayEl.innerHTML = syntaxHighlightJson(data);
+  } catch (err) {
+    displayEl.textContent = `// Error al consultar JSON: ${err.message}`;
+  }
+}
+
+// Resaltador de sintaxis JSON
+function syntaxHighlightJson(json) {
+  if (typeof json !== 'string') {
+    json = JSON.stringify(json, null, 2);
+  }
+  json = escapeHtml(json);
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+    let cls = 'json-number';
+    if (/^"/.test(match)) {
+      if (/:$/.test(match)) {
+        cls = 'json-key';
+      } else {
+        cls = 'json-string';
+      }
+    } else if (/true|false/.test(match)) {
+      cls = 'json-boolean';
+    } else if (/null/.test(match)) {
+      cls = 'json-null';
+    }
+    return `<span class="${cls}">${match}</span>`;
+  });
+}
+
+// Copiar JSON del visor
+function copyViewerJson() {
+  if (!lastViewedData) {
+    showToast('No hay datos para copiar', 'error');
+    return;
+  }
+  const text = JSON.stringify(lastViewedData, null, 2);
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('¡JSON copiado al portapapeles!', 'success');
+  }).catch(() => {
+    showToast('No se pudo copiar al portapapeles', 'error');
+  });
+}
+
+// Descargar JSON del visor
+function downloadViewerJson() {
+  if (!lastViewedData) return;
+  const endpoint = document.getElementById('viewerEndpoint').value;
+  const filename = endpoint === 'all' ? 'message.json' : `${endpoint}.json`;
+  triggerDownload(lastViewedData, filename);
+}
+
+// Descargar JSON completo
+function downloadCurrentJson() {
+  const fullData = {
+    programas: state.programas,
+    aprendices: state.aprendices,
+    instructores: state.instructores,
+    cursos: state.cursos,
+    matriculas: state.matriculas,
+    calificaciones: state.calificaciones
+  };
+  triggerDownload(fullData, 'message.json');
+}
+
+function triggerDownload(data, filename) {
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`Descargando ${filename}`, 'info');
+}
+
+// Cargar toda la base de datos actual al editor derecho
+function loadDbIntoEditor() {
+  const target = document.getElementById('feedTarget').value;
+  let data;
+  if (target === 'root') {
+    data = {
+      programas: state.programas,
+      aprendices: state.aprendices,
+      instructores: state.instructores,
+      cursos: state.cursos,
+      matriculas: state.matriculas,
+      calificaciones: state.calificaciones
+    };
+  } else {
+    data = state[target] || [];
+  }
+  document.getElementById('jsonEditor').value = JSON.stringify(data, null, 2);
+  showToast(`Datos de ${target} cargados al editor`, 'success');
+}
+
+// Formatear JSON del editor
+function formatEditorJson() {
+  const editor = document.getElementById('jsonEditor');
+  if (!editor || !editor.value.trim()) return;
+  try {
+    const parsed = JSON.parse(editor.value);
+    editor.value = JSON.stringify(parsed, null, 2);
+    showToast('JSON formateado correctamente', 'success');
+  } catch (err) {
+    showToast(`Error de sintaxis JSON: ${err.message}`, 'error');
+  }
+}
+
+// Limpiar editor
+function clearEditorJson() {
+  const editor = document.getElementById('jsonEditor');
+  if (editor) editor.value = '';
+}
+
+// Cargar archivo local al editor
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      document.getElementById('jsonEditor').value = JSON.stringify(parsed, null, 2);
+      showToast(`Archivo "${file.name}" cargado`, 'success');
+    } catch (err) {
+      showToast(`El archivo no contiene un JSON válido: ${err.message}`, 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Plantillas predefinidas
+const TEMPLATES = {
+  aprendices: {
+    target: 'aprendices',
+    data: [
+      {
+        documento: "1004567890",
+        nombres: "Sofía",
+        apellidos: "Castro Vargas",
+        correo: "sofia.castro@example.com",
+        telefono: "3157778899",
+        fechaNacimiento: "2004-03-22",
+        ciudad: "Neiva",
+        estado: "Activo"
+      }
+    ]
+  },
+  programas: {
+    target: 'programas',
+    data: [
+      {
+        nombre: "Inteligencia Artificial y Ciencia de Datos",
+        codigo: "IACD",
+        nivel: "Tecnólogo",
+        duracion: 24,
+        estado: true
+      }
+    ]
+  },
+  cursos: {
+    target: 'cursos',
+    data: [
+      {
+        nombre: "Desarrollo con Python y FastAPI",
+        descripcion: "Construcción de APIs modernas y de alto rendimiento",
+        horas: 40,
+        instructorId: 1,
+        estado: "Disponible"
+      }
+    ]
+  },
+  matriculas: {
+    target: 'matriculas',
+    data: [
+      {
+        aprendizId: 1,
+        cursoId: 2,
+        fechaMatricula: new Date().toISOString().split('T')[0],
+        estado: "Matriculado"
+      }
+    ]
+  },
+  calificaciones: {
+    target: 'calificaciones',
+    data: [
+      {
+        matriculaId: 1,
+        nota: 4.8,
+        observacion: "Excelente rendimiento y entrega puntual",
+        fecha: new Date().toISOString().split('T')[0]
+      }
+    ]
+  }
+};
+
+function loadTemplate(type) {
+  const tpl = TEMPLATES[type];
+  if (!tpl) return;
+  const targetSelect = document.getElementById('feedTarget');
+  if (targetSelect) targetSelect.value = tpl.target;
+
+  const payload = {};
+  payload[tpl.target] = tpl.data;
+
+  document.getElementById('jsonEditor').value = JSON.stringify(payload, null, 2);
+  showToast(`Plantilla de ${type} cargada`, 'info');
+}
+
+function initDefaultEditorTemplate() {
+  const editor = document.getElementById('jsonEditor');
+  if (editor && !editor.value.trim()) {
+    loadTemplate('aprendices');
+  }
+}
+
+// Enviar / Alimentar el servidor con el JSON del editor
+async function submitFeedJson() {
+  const editor = document.getElementById('jsonEditor');
+  if (!editor || !editor.value.trim()) {
+    showToast('El editor JSON está vacío', 'error');
+    return;
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(editor.value);
+  } catch (err) {
+    showToast(`JSON inválido: ${err.message}`, 'error');
+    return;
+  }
+
+  const target = document.getElementById('feedTarget').value;
+  let itemsCount = 0;
+
+  showToast('Alimentando servidor con datos JSON...', 'info');
+
+  try {
+    if (target === 'root') {
+      // Objeto raíz: ej: { "aprendices": [...], "cursos": [...] }
+      for (const [key, items] of Object.entries(parsed)) {
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            await apiRequest(`/${key}`, 'POST', item);
+            itemsCount++;
+          }
+        } else if (typeof items === 'object' && items !== null) {
+          await apiRequest(`/${key}`, 'POST', items);
+          itemsCount++;
+        }
+      }
+    } else {
+      // Endpoint específico
+      if (Array.isArray(parsed)) {
+        for (const item of parsed) {
+          await apiRequest(`/${target}`, 'POST', item);
+          itemsCount++;
+        }
+      } else if (parsed[target] && Array.isArray(parsed[target])) {
+        for (const item of parsed[target]) {
+          await apiRequest(`/${target}`, 'POST', item);
+          itemsCount++;
+        }
+      } else {
+        await apiRequest(`/${target}`, 'POST', parsed);
+        itemsCount++;
+      }
+    }
+
+    showToast(`¡Éxito! Se alimentaron ${itemsCount} registros a message.json`, 'success');
+    await fetchAllData();
+  } catch (err) {
+    showToast(`Error al alimentar servidor: ${err.message}`, 'error');
+  }
 }
 
 function escapeHtml(text) {

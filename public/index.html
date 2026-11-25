@@ -43,15 +43,41 @@
   <div class="app-layout">
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
+      <!-- Sidebar Brand Header -->
+      <div class="sidebar-brand-box">
+        <div class="sidebar-brand-logo">
+          <span>{ }</span>
+        </div>
+        <div>
+          <div class="sidebar-brand-name">Gestor JSON</div>
+          <div class="sidebar-brand-sub">Servidor Academic DB</div>
+        </div>
+      </div>
+
+      <div class="sidebar-status-pill">
+        <span class="status-dot"></span>
+        <span id="sidebarStatusText">Conectado &middot; 127.0.0.1:3000</span>
+      </div>
+
       <nav class="nav-menu">
-        <button class="nav-item active" data-tab="dashboard">
+        <button class="nav-item" data-tab="dashboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="7" height="9"/>
             <rect x="14" y="3" width="7" height="5"/>
             <rect x="14" y="12" width="7" height="9"/>
             <rect x="3" y="16" width="7" height="5"/>
           </svg>
-          <span>Panel Principal</span>
+          <span>Resumen</span>
+        </button>
+
+        <div class="sidebar-heading">COLECCIONES JSON</div>
+
+        <button class="nav-item" data-tab="programas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span>Programas</span>
+          <span class="badge" id="countBadgeProgramas">0</span>
         </button>
 
         <button class="nav-item" data-tab="aprendices">
@@ -64,12 +90,13 @@
           <span class="badge" id="countBadgeAprendices">0</span>
         </button>
 
-        <button class="nav-item" data-tab="programas">
+        <button class="nav-item" data-tab="instructores">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
           </svg>
-          <span>Programas</span>
-          <span class="badge" id="countBadgeProgramas">0</span>
+          <span>Instructores</span>
+          <span class="badge" id="countBadgeInstructores">0</span>
         </button>
 
         <button class="nav-item" data-tab="cursos">
@@ -81,15 +108,6 @@
           <span class="badge" id="countBadgeCursos">0</span>
         </button>
 
-        <button class="nav-item" data-tab="instructores">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-          <span>Instructores</span>
-          <span class="badge" id="countBadgeInstructores">0</span>
-        </button>
-
         <button class="nav-item" data-tab="matriculas">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -98,19 +116,39 @@
             <line x1="16" y1="17" x2="8" y2="17"/>
             <polyline points="10 9 9 9 8 9"/>
           </svg>
-          <span>Matrículas & Notas</span>
+          <span>Matriculas</span>
           <span class="badge" id="countBadgeMatriculas">0</span>
+        </button>
+
+        <button class="nav-item" data-tab="calificaciones">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span>Calificaciones</span>
+          <span class="badge" id="countBadgeCalificaciones">0</span>
+        </button>
+
+        <div class="sidebar-heading">SINCRONIZACIÓN</div>
+
+        <button class="nav-item nav-item-centro active" data-tab="centro-json">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+          <span>Centro JSON</span>
+          <span class="pill-api">API</span>
         </button>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="api-info-box">
-          <div class="api-info-title">Endpoints JSON</div>
-          <code>/aprendices</code>
-          <code>/programas</code>
-          <code>/cursos</code>
-          <code>/instructores</code>
+        <div class="sidebar-file-info">
+          <span class="file-label">Archivo origen:</span>
+          <code class="file-name">message.json</code>
         </div>
+        <button class="btn-sidebar-download" onclick="downloadCurrentJson()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar datos
+        </button>
       </div>
     </aside>
 
@@ -118,7 +156,7 @@
     <main class="content-container">
 
       <!-- TAB: DASHBOARD -->
-      <section id="tab-dashboard" class="tab-pane active">
+      <section id="tab-dashboard" class="tab-pane">
         <div class="section-header">
           <div>
             <h2 class="section-title">Resumen del Servidor</h2>
@@ -355,6 +393,138 @@
               <tr><td colspan="7" class="text-center"><div class="loader-spinner"></div></td></tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- TAB: CALIFICACIONES -->
+      <section id="tab-calificaciones" class="tab-pane">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Registro de Calificaciones</h2>
+            <p class="section-desc">Notas asignadas a los aprendices matriculados</p>
+          </div>
+          <button class="btn btn-primary" onclick="switchTab('matriculas')">
+            Ver Matrículas
+          </button>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Aprendiz</th>
+                <th>Curso</th>
+                <th>Nota</th>
+                <th>Observación</th>
+                <th>Fecha</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyCalificaciones">
+              <tr><td colspan="7" class="text-center"><div class="loader-spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB: CENTRO JSON (ALIMENTAR Y RECIBIR) -->
+      <section id="tab-centro-json" class="tab-pane active">
+        <div class="section-header json-center-header">
+          <div>
+            <h2 class="section-title">Centro JSON (Alimentar y Recibir)</h2>
+            <p class="section-desc">Consulta el JSON completo del servidor o envía nuevos datos JSON hacia <code>message.json</code></p>
+          </div>
+          <div class="header-actions-right">
+            <span class="update-clock" id="clockUpdated">Actualizado --:--:--</span>
+            <button class="btn btn-outline" onclick="downloadCurrentJson()" title="Descargar archivo JSON">
+              Descargar JSON
+            </button>
+            <button class="btn btn-emerald" onclick="reloadJsonCenter()" title="Recargar JSON desde el servidor">
+              Recargar JSON
+            </button>
+          </div>
+        </div>
+
+        <div class="json-center-grid">
+          <!-- Columna Izquierda: Recibir datos del JSON -->
+          <div class="json-card">
+            <div class="json-card-header">
+              <h3 class="json-card-title">Recibir datos del JSON</h3>
+              <div class="card-action-btns">
+                <button class="btn btn-secondary btn-sm" onclick="copyViewerJson()">Copiar</button>
+                <button class="btn btn-secondary btn-sm" onclick="downloadViewerJson()">Descargar</button>
+              </div>
+            </div>
+
+            <div class="json-card-controls">
+              <select id="viewerEndpoint" class="select-control" onchange="fetchViewerData()">
+                <option value="all">Base completa (/api/json)</option>
+                <option value="programas">Programas (/programas)</option>
+                <option value="aprendices">Aprendices (/aprendices)</option>
+                <option value="instructores">Instructores (/instructores)</option>
+                <option value="cursos">Cursos (/cursos)</option>
+                <option value="matriculas">Matriculas (/matriculas)</option>
+                <option value="calificaciones">Calificaciones (/calificaciones)</option>
+              </select>
+
+              <input type="text" id="viewerFilter" class="input-control" placeholder="Filtro opcional ej: estado=" onkeydown="if(event.key==='Enter') fetchViewerData()">
+
+              <button class="btn btn-emerald btn-sm" onclick="fetchViewerData()">
+                Consultar
+              </button>
+            </div>
+
+            <div class="code-container">
+              <pre class="code-block" id="jsonViewerDisplay"><code>// Consultando datos...</code></pre>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Alimentar el servidor con JSON -->
+          <div class="json-card">
+            <div class="json-card-header">
+              <h3 class="json-card-title">Alimentar el servidor con JSON</h3>
+              <div class="card-action-btns">
+                <input type="file" id="fileJsonUpload" accept=".json" style="display: none;" onchange="handleFileUpload(event)">
+                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('fileJsonUpload').click()">Cargar .json</button>
+              </div>
+            </div>
+
+            <div class="json-card-controls">
+              <select id="feedTarget" class="select-control">
+                <option value="root">Objeto raíz completo (ej: {"aprendices":[...]})</option>
+                <option value="aprendices">Aprendices (/aprendices)</option>
+                <option value="programas">Programas (/programas)</option>
+                <option value="cursos">Cursos (/cursos)</option>
+                <option value="instructores">Instructores (/instructores)</option>
+                <option value="matriculas">Matriculas (/matriculas)</option>
+                <option value="calificaciones">Calificaciones (/calificaciones)</option>
+              </select>
+
+              <button class="btn btn-secondary btn-sm" onclick="loadDbIntoEditor()">Cargar DB actual</button>
+            </div>
+
+            <div class="template-pills-row">
+              <button class="pill-btn pill-format" onclick="formatEditorJson()">Formatear</button>
+              <button class="pill-btn" onclick="loadTemplate('aprendices')">Plantilla aprendices</button>
+              <button class="pill-btn" onclick="loadTemplate('programas')">Plantilla programas</button>
+              <button class="pill-btn" onclick="loadTemplate('cursos')">Plantilla cursos</button>
+              <button class="pill-btn" onclick="loadTemplate('matriculas')">Plantilla matriculas</button>
+              <button class="pill-btn" onclick="loadTemplate('calificaciones')">Plantilla calificaciones</button>
+            </div>
+
+            <div class="code-container editor-container">
+              <textarea id="jsonEditor" class="code-editor" spellcheck="false" placeholder="Escribe o pega aquí el código JSON..."></textarea>
+            </div>
+
+            <div class="editor-footer-actions">
+              <button class="btn btn-emerald" onclick="submitFeedJson()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Enviar / Alimentar JSON al Servidor
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="clearEditorJson()">Limpiar</button>
+            </div>
+          </div>
         </div>
       </section>
 

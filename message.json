@@ -1,0 +1,155 @@
+{
+  "programas": [
+    {
+      "id": "1",
+      "nombre": "Análisis y Desarrollo de Software",
+      "codigo": "ADSO",
+      "nivel": "Tecnólogo",
+      "duracion": 24,
+      "estado": true
+    },
+    {
+      "id": "2",
+      "nombre": "Desarrollo de Sistemas de Información",
+      "codigo": "DSI",
+      "nivel": "Técnico",
+      "duracion": 15,
+      "estado": true
+    }
+  ],
+  "aprendices": [
+    {
+      "id": "1",
+      "documento": "1001234567",
+      "nombres": "Juan David",
+      "apellidos": "Pérez López",
+      "correo": "juan.perez@example.com",
+      "telefono": "3001234567",
+      "fechaNacimiento": "2003-05-15",
+      "ciudad": "Neiva",
+      "estado": "Activo"
+    },
+    {
+      "id": "2",
+      "documento": "1002345678",
+      "nombres": "María Fernanda",
+      "apellidos": "Gómez Ruiz",
+      "correo": "maria.gomez@example.com",
+      "telefono": "3109876543",
+      "fechaNacimiento": "2002-08-20",
+      "ciudad": "Pitalito",
+      "estado": "Activo"
+    },
+    {
+      "id": "3",
+      "documento": "1003456789",
+      "nombres": "Andrés Felipe",
+      "apellidos": "Rodríguez Díaz",
+      "correo": "andres.rodriguez@example.com",
+      "telefono": "3204567890",
+      "fechaNacimiento": "2004-01-10",
+      "ciudad": "Neiva",
+      "estado": "Inactivo"
+    }
+  ],
+  "instructores": [
+    {
+      "id": "1",
+      "documento": "12345678",
+      "nombres": "Carlos",
+      "apellidos": "Ramírez",
+      "correo": "carlos.ramirez@example.com",
+      "especialidad": "Desarrollo de Software",
+      "estado": true
+    },
+    {
+      "id": "2",
+      "documento": "87654321",
+      "nombres": "Laura",
+      "apellidos": "Martínez",
+      "correo": "laura.martinez@example.com",
+      "especialidad": "Bases de Datos",
+      "estado": true
+    }
+  ],
+  "cursos": [
+    {
+      "id": "1",
+      "nombre": "Fundamentos de Java",
+      "descripcion": "Introducción a la programación orientada a objetos",
+      "horas": 60,
+      "instructorId": 1,
+      "estado": "Disponible"
+    },
+    {
+      "id": "2",
+      "nombre": "Bases de Datos SQL",
+      "descripcion": "Diseño y consultas de bases de datos relacionales",
+      "horas": 48,
+      "instructorId": 2,
+      "estado": "Disponible"
+    },
+    {
+      "id": "3",
+      "nombre": "Desarrollo Web con React",
+      "descripcion": "Desarrollo de interfaces web modernas",
+      "horas": 60,
+      "instructorId": 1,
+      "estado": "Disponible"
+    }
+  ],
+  "matriculas": [
+    {
+      "id": "1",
+      "aprendizId": 1,
+      "cursoId": 1,
+      "fechaMatricula": "2026-11-01",
+      "estado": "Matriculado"
+    },
+    {
+      "id": "2",
+      "aprendizId": 1,
+      "cursoId": 2,
+      "fechaMatricula": "2026-11-02",
+      "estado": "Matriculado"
+    },
+    {
+      "id": "3",
+      "aprendizId": 2,
+      "cursoId": 1,
+      "fechaMatricula": "2026-11-03",
+      "estado": "Matriculado"
+    },
+    {
+      "id": "4",
+      "aprendizId": 3,
+      "cursoId": 3,
+      "fechaMatricula": "2026-11-04",
+      "estado": "Retirado"
+    }
+  ],
+  "calificaciones": [
+    {
+      "id": "1",
+      "matriculaId": 1,
+      "nota": 4.5,
+      "observacion": "Excelente desempeño",
+      "fecha": "2026-11-15"
+    },
+    {
+      "id": "2",
+      "matriculaId": 2,
+      "nota": 3.8,
+      "observacion": "Buen desempeño",
+      "fecha": "2026-11-16"
+    },
+    {
+      "id": "3",
+      "matriculaId": 3,
+      "nota": 2.5,
+      "observacion": "Requiere refuerzo",
+      "fecha": "2026-11-17"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

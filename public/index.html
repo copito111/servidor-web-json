@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión - Servidor JSON</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header / Topbar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 7v10c0 2 1.5 3 3.5 3h9c2 0 3.5-1 3.5-3V7c0-2-1.5-3-3.5-3h-9C5.5 4 4 5 4 7z"/>
+          <path d="M9 12h6m-6 4h4M9 8h6"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">Gestión de Servidor JSON</h1>
+        <p class="brand-subtitle">Servidor API REST &middot; http://localhost:3000</p>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <div id="serverStatus" class="status-badge checking">
+        <span class="status-dot"></span>
+        <span class="status-text">Comprobando conexión...</span>
+      </div>
+      <button id="btnRefreshAll" class="btn btn-secondary btn-sm" title="Recargar datos">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+        </svg>
+        <span>Sincronizar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="9"/>
+            <rect x="14" y="3" width="7" height="5"/>
+            <rect x="14" y="12" width="7" height="9"/>
+            <rect x="3" y="16" width="7" height="5"/>
+          </svg>
+          <span>Panel Principal</span>
+        </button>
+
+        <button class="nav-item" data-tab="aprendices">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <span>Aprendices</span>
+          <span class="badge" id="countBadgeAprendices">0</span>
+        </button>
+
+        <button class="nav-item" data-tab="programas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span>Programas</span>
+          <span class="badge" id="countBadgeProgramas">0</span>
+        </button>
+
+        <button class="nav-item" data-tab="cursos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          <span>Cursos</span>
+          <span class="badge" id="countBadgeCursos">0</span>
+        </button>
+
+        <button class="nav-item" data-tab="instructores">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span>Instructores</span>
+          <span class="badge" id="countBadgeInstructores">0</span>
+        </button>
+
+        <button class="nav-item" data-tab="matriculas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span>Matrículas & Notas</span>
+          <span class="badge" id="countBadgeMatriculas">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="api-info-box">
+          <div class="api-info-title">Endpoints JSON</div>
+          <code>/aprendices</code>
+          <code>/programas</code>
+          <code>/cursos</code>
+          <code>/instructores</code>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content-container">
+
+      <!-- TAB: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-pane active">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Resumen del Servidor</h2>
+            <p class="section-desc">Métricas y datos sincronizados en tiempo real con <code>message.json</code></p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modalAprendiz')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Registro
+          </button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon icon-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            <div class="stat-data">
+              <span class="stat-value" id="statAprendices">0</span>
+              <span class="stat-label">Total Aprendices</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon icon-emerald">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="stat-data">
+              <span class="stat-value" id="statProgramas">0</span>
+              <span class="stat-label">Programas Formativos</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon icon-amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </div>
+            <div class="stat-data">
+              <span class="stat-value" id="statCursos">0</span>
+              <span class="stat-label">Cursos Ofertados</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon icon-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="stat-data">
+              <span class="stat-value" id="statInstructores">0</span>
+              <span class="stat-label">Instructores Activos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-columns">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Últimos Aprendices Registrados</h3>
+              <button class="btn-link" onclick="switchTab('aprendices')">Ver todos &rarr;</button>
+            </div>
+            <div class="card-body">
+              <div id="dashboardRecentAprendices" class="list-compact">
+                <div class="loader-spinner"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Cursos Disponibles</h3>
+              <button class="btn-link" onclick="switchTab('cursos')">Ver todos &rarr;</button>
+            </div>
+            <div class="card-body">
+              <div id="dashboardRecentCursos" class="list-compact">
+                <div class="loader-spinner"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: APRENDICES -->
+      <section id="tab-aprendices" class="tab-pane">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Gestión de Aprendices</h2>
+            <p class="section-desc">Crea, edita y alimenta la base de datos de aprendices</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modalAprendiz')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Agregar Aprendiz
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="search-input-wrap">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchAprendiz" placeholder="Buscar por nombre, documento o correo..." oninput="filterAprendices()">
+          </div>
+          <select id="filterEstadoAprendiz" onchange="filterAprendices()" class="select-control">
+            <option value="">Todos los estados</option>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+          </select>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Documento</th>
+                <th>Nombre Completo</th>
+                <th>Contacto</th>
+                <th>Ciudad</th>
+                <th>Estado</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAprendices">
+              <tr><td colspan="6" class="text-center"><div class="loader-spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB: PROGRAMAS -->
+      <section id="tab-programas" class="tab-pane">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Programas de Formación</h2>
+            <p class="section-desc">Listado de programas técnicos y tecnólogos</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modalPrograma')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Programa
+          </button>
+        </div>
+
+        <div class="programs-grid" id="gridProgramas">
+          <div class="loader-spinner"></div>
+        </div>
+      </section>
+
+      <!-- TAB: CURSOS -->
+      <section id="tab-cursos" class="tab-pane">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Cursos de Formación</h2>
+            <p class="section-desc">Cursos impartidos e instructores a cargo</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modalCurso')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Curso
+          </button>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Curso</th>
+                <th>Descripción</th>
+                <th>Intensidad</th>
+                <th>Instructor Asignado</th>
+                <th>Estado</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyCursos">
+              <tr><td colspan="6" class="text-center"><div class="loader-spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB: INSTRUCTORES -->
+      <section id="tab-instructores" class="tab-pane">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Equipo de Instructores</h2>
+            <p class="section-desc">Registro del personal docente y sus especialidades</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modalInstructor')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Agregar Instructor
+          </button>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Documento</th>
+                <th>Instructor</th>
+                <th>Correo</th>
+                <th>Especialidad</th>
+                <th>Estado</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyInstructores">
+              <tr><td colspan="6" class="text-center"><div class="loader-spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB: MATRÍCULAS & NOTAS -->
+      <section id="tab-matriculas" class="tab-pane">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Matrículas & Calificaciones</h2>
+            <p class="section-desc">Vinculación de aprendices a cursos y registro de notas</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modalMatricula')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva Matrícula
+          </button>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Aprendiz</th>
+                <th>Curso</th>
+                <th>Fecha Matrícula</th>
+                <th>Estado Matrícula</th>
+                <th>Nota & Observación</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyMatriculas">
+              <tr><td colspan="7" class="text-center"><div class="loader-spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== MODALES ==================== -->
+
+  <!-- MODAL: APRENDIZ -->
+  <div id="modalAprendiz" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalAprendizTitle">Registrar Nuevo Aprendiz</h3>
+        <button class="modal-close" onclick="closeModal('modalAprendiz')">&times;</button>
+      </div>
+      <form id="formAprendiz" onsubmit="saveAprendiz(event)">
+        <input type="hidden" id="aprendizId">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aprendizDoc">Documento *</label>
+            <input type="text" id="aprendizDoc" required placeholder="Ej: 1004567890">
+          </div>
+          <div class="form-group">
+            <label for="aprendizEstado">Estado *</label>
+            <select id="aprendizEstado" required>
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aprendizNombres">Nombres *</label>
+            <input type="text" id="aprendizNombres" required placeholder="Ej: Carlos Alberto">
+          </div>
+          <div class="form-group">
+            <label for="aprendizApellidos">Apellidos *</label>
+            <input type="text" id="aprendizApellidos" required placeholder="Ej: Gómez Moreno">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aprendizCorreo">Correo Electrónico *</label>
+            <input type="email" id="aprendizCorreo" required placeholder="correo@ejemplo.com">
+          </div>
+          <div class="form-group">
+            <label for="aprendizTelefono">Teléfono</label>
+            <input type="text" id="aprendizTelefono" placeholder="3101234567">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aprendizCiudad">Ciudad</label>
+            <input type="text" id="aprendizCiudad" placeholder="Ej: Neiva, Bogotá...">
+          </div>
+          <div class="form-group">
+            <label for="aprendizFechaNac">Fecha de Nacimiento</label>
+            <input type="date" id="aprendizFechaNac">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalAprendiz')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveAprendiz">Guardar Aprendiz</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PROGRAMA -->
+  <div id="modalPrograma" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalProgramaTitle">Nuevo Programa</h3>
+        <button class="modal-close" onclick="closeModal('modalPrograma')">&times;</button>
+      </div>
+      <form id="formPrograma" onsubmit="savePrograma(event)">
+        <input type="hidden" id="programaId">
+        <div class="form-group">
+          <label for="programaNombre">Nombre del Programa *</label>
+          <input type="text" id="programaNombre" required placeholder="Ej: Inteligencia Artificial Aplicada">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="programaCodigo">Código *</label>
+            <input type="text" id="programaCodigo" required placeholder="Ej: IAA-01">
+          </div>
+          <div class="form-group">
+            <label for="programaNivel">Nivel de Formación *</label>
+            <select id="programaNivel" required>
+              <option value="Tecnólogo">Tecnólogo</option>
+              <option value="Técnico">Técnico</option>
+              <option value="Especialización">Especialización</option>
+              <option value="Curso Corto">Curso Corto</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="programaDuracion">Duración (Meses) *</label>
+            <input type="number" id="programaDuracion" required min="1" value="24">
+          </div>
+          <div class="form-group">
+            <label for="programaEstado">Estado</label>
+            <select id="programaEstado">
+              <option value="true">Activo</option>
+              <option value="false">Inactivo</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalPrograma')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Programa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CURSO -->
+  <div id="modalCurso" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalCursoTitle">Nuevo Curso</h3>
+        <button class="modal-close" onclick="closeModal('modalCurso')">&times;</button>
+      </div>
+      <form id="formCurso" onsubmit="saveCurso(event)">
+        <input type="hidden" id="cursoId">
+        <div class="form-group">
+          <label for="cursoNombre">Nombre del Curso *</label>
+          <input type="text" id="cursoNombre" required placeholder="Ej: Arquitectura Cloud con GCP">
+        </div>
+        <div class="form-group">
+          <label for="cursoDesc">Descripción</label>
+          <textarea id="cursoDesc" rows="3" placeholder="Breve resumen del contenido..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cursoHoras">Intensidad Horaria *</label>
+            <input type="number" id="cursoHoras" required min="1" value="40">
+          </div>
+          <div class="form-group">
+            <label for="cursoInstructorId">Instructor Asignado</label>
+            <select id="cursoInstructorId">
+              <option value="">Seleccione instructor...</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="cursoEstado">Estado del Curso</label>
+          <select id="cursoEstado">
+            <option value="Disponible">Disponible</option>
+            <option value="En Curso">En Curso</option>
+            <option value="Cerrado">Cerrado</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalCurso')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Curso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: INSTRUCTOR -->
+  <div id="modalInstructor" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalInstructorTitle">Nuevo Instructor</h3>
+        <button class="modal-close" onclick="closeModal('modalInstructor')">&times;</button>
+      </div>
+      <form id="formInstructor" onsubmit="saveInstructor(event)">
+        <input type="hidden" id="instructorId">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="instDoc">Documento *</label>
+            <input type="text" id="instDoc" required placeholder="12345678">
+          </div>
+          <div class="form-group">
+            <label for="instEspecialidad">Especialidad *</label>
+            <input type="text" id="instEspecialidad" required placeholder="Ej: Ciberseguridad">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="instNombres">Nombres *</label>
+            <input type="text" id="instNombres" required placeholder="María">
+          </div>
+          <div class="form-group">
+            <label for="instApellidos">Apellidos *</label>
+            <input type="text" id="instApellidos" required placeholder="Fernández">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="instCorreo">Correo Electrónico *</label>
+          <input type="email" id="instCorreo" required placeholder="m.fernandez@ejemplo.com">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalInstructor')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Instructor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: MATRÍCULA -->
+  <div id="modalMatricula" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Registrar Matrícula</h3>
+        <button class="modal-close" onclick="closeModal('modalMatricula')">&times;</button>
+      </div>
+      <form id="formMatricula" onsubmit="saveMatricula(event)">
+        <div class="form-group">
+          <label for="matAprendizId">Aprendiz *</label>
+          <select id="matAprendizId" required>
+            <option value="">Seleccione aprendiz...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="matCursoId">Curso a Matricular *</label>
+          <select id="matCursoId" required>
+            <option value="">Seleccione curso...</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="matFecha">Fecha Matrícula</label>
+            <input type="date" id="matFecha" required>
+          </div>
+          <div class="form-group">
+            <label for="matEstado">Estado</label>
+            <select id="matEstado">
+              <option value="Matriculado">Matriculado</option>
+              <option value="Finalizado">Finalizado</option>
+              <option value="Retirado">Retirado</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalMatricula')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Matricular</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CALIFICACIÓN -->
+  <div id="modalCalificacion" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalCalifTitle">Asignar Calificación</h3>
+        <button class="modal-close" onclick="closeModal('modalCalificacion')">&times;</button>
+      </div>
+      <form id="formCalificacion" onsubmit="saveCalificacion(event)">
+        <input type="hidden" id="califMatriculaId">
+        <input type="hidden" id="califId">
+        <p id="califInfoDesc" class="text-muted" style="margin-bottom: 1rem; font-size: 0.9rem;"></p>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="califNota">Nota (0.0 a 5.0) *</label>
+            <input type="number" step="0.1" min="0" max="5" id="califNota" required placeholder="4.5">
+          </div>
+          <div class="form-group">
+            <label for="califFecha">Fecha</label>
+            <input type="date" id="califFecha" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="califObservacion">Observación</label>
+          <textarea id="califObservacion" rows="3" placeholder="Observaciones de rendimiento..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalCalificacion')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Nota</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

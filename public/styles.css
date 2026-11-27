@@ -1058,5 +1058,190 @@ form {
   border-top: 1px solid var(--border);
 }
 
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+/* Botón Hamburguesa móvil */
+.btn-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-dark);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+}
+
+.btn-menu-toggle:hover {
+  background: #f1f5f9;
+}
+
+/* Botón cerrar sidebar móvil */
+.btn-close-sidebar {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.btn-close-sidebar:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Fondo oscurecido para drawer móvil */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 85;
+}
+
+.sidebar-overlay.open {
+  display: block;
+}
+
+/* Tablets y pantallas medianas (≤ 860px) */
+@media (max-width: 860px) {
+  .btn-menu-toggle {
+    display: inline-flex;
+  }
+
+  .btn-close-sidebar {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    bottom: 0;
+    width: 270px;
+    z-index: 100;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .topbar {
+    padding: 0 16px;
+    height: 60px;
+  }
+
+  .brand-title {
+    font-size: 1rem;
+  }
+
+  .brand-subtitle {
+    display: none;
+  }
+
+  .content-container {
+    padding: 20px 16px;
+  }
+}
+
+/* Teléfonos móviles (≤ 640px) */
+@media (max-width: 640px) {
+  .topbar {
+    padding: 0 12px;
+  }
+
+  .topbar-actions #serverStatus .status-text {
+    display: none;
+  }
+
+  .status-badge {
+    padding: 6px;
+  }
+
+  .content-container {
+    padding: 16px 12px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .section-header > button,
+  .section-header .header-actions-right {
+    width: 100%;
+  }
+
+  .header-actions-right {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .header-actions-right .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .json-card {
+    padding: 14px;
+  }
+
+  .json-card-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .json-card-controls .select-control,
+  .json-card-controls .input-control,
+  .json-card-controls button {
+    width: 100%;
+  }
+
+  .editor-footer-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .editor-footer-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal-box {
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+  }
+}
+
 .text-center { text-align: center; }
 .text-muted { color: var(--text-muted); }

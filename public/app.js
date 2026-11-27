@@ -36,15 +36,40 @@ document.addEventListener('DOMContentLoaded', () => {
   if (califFecha) califFecha.value = today;
 });
 
-// Navegación entre pestañas
+// Navegación entre pestañas y Menú Móvil
 function setupNavigation() {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(item => {
     item.addEventListener('click', () => {
       const tabName = item.getAttribute('data-tab');
       switchTab(tabName);
+      closeMobileSidebar();
     });
   });
+
+  const btnToggle = document.getElementById('btnToggleSidebar');
+  const btnClose = document.getElementById('btnCloseSidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+
+  if (btnToggle) {
+    btnToggle.addEventListener('click', () => {
+      document.querySelector('.sidebar')?.classList.toggle('open');
+      overlay?.classList.toggle('open');
+    });
+  }
+
+  if (btnClose) {
+    btnClose.addEventListener('click', closeMobileSidebar);
+  }
+
+  if (overlay) {
+    overlay.addEventListener('click', closeMobileSidebar);
+  }
+}
+
+function closeMobileSidebar() {
+  document.querySelector('.sidebar')?.classList.remove('open');
+  document.getElementById('sidebarOverlay')?.classList.remove('open');
 }
 
 function switchTab(tabName) {
